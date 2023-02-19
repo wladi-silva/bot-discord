@@ -1,8 +1,19 @@
 package com.wladi;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedInput;
@@ -18,6 +29,8 @@ public class App extends ListenerAdapter {
 
     public static final String TOKEN = "MTA3NjI1NTA3NjE2OTA0MDAxMg.GJFqjw.Kwjxc7BjkqDkuTTroj0sI90xHeRCOKyCDajdE8";
     public static final String RSS = "https://www.tabnews.com.br/recentes/rss";
+    public static final String ENDPOINT = "https://api.openai.com/v1/completions";
+    public static final String KEY = "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";
 
     public static void main(String[] args) {
         JDA client = JDABuilder.createLight(TOKEN, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
@@ -46,10 +59,15 @@ public class App extends ListenerAdapter {
             String question = messageContent.substring("/pergunta".length()).trim();
             if (!question.isEmpty()) {
                 String answer = getAnswer(question);
-                event.getChannel().sendMessage(answer).queue();
+                event.getChannel().sendMessage(event.getMember().getAsMention() + answer).queue();
             } else {
                 event.getChannel().sendMessage("Por favor, digite uma pergunta.").queue();
             }
+        }
+
+        if (messageContent.equalsIgnoreCase("/no")) {
+            String answer = getAnswer("Crie uma resposta engraçada e criativa para a pergunta 'qual a desculpa de Antônio para não trabalhar hoje?'");
+            event.getChannel().sendMessage(answer).queue();
         }
 
         if (messageContent.equalsIgnoreCase("/noticias")) {
@@ -64,11 +82,47 @@ public class App extends ListenerAdapter {
                 event.getChannel().sendMessage(thumbnail.replace("${link}", entry.getLink().substring(27)) + "/thumbnail \n\n").queue();
             }
         }
-
     }
 
-    private String getAnswer(String question) {
-        return "A resposta para \"" + question + "\" é 42.";
+
+    public String getAnswer(String question) {
+        RestTemplate restTemplate = new RestTemplate();
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(KEY);
+        
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("model", "text-davinci-003");
+        map.put("prompt", question);
+        map.put("max_tokens", 2048);
+        map.put("temperature", 1);
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            String body = new ObjectMapper().writeValueAsString(map);
+            HttpEntity<String> request = new HttpEntity<>(body, headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(ENDPOINT, HttpMethod.POST, request, String.class);    
+            JsonNode jsonNode = objectMapper.readTree(response.getBody());
+            JsonNode choices = jsonNode.get("choices");
+            
+            String text = "";
+            if (choices.isArray()) {
+                for (JsonNode choice : choices) {
+                    text = choice.get("text").asText();
+                }
+            }
+
+            return text;
+        } catch (Exception e) {
+            e.printStackTrace();
+        
+            return "\nDesculpa, algo de errado aconteceu.";
+        }
+
     }
 
     public List<SyndEntry> rssContent() {
