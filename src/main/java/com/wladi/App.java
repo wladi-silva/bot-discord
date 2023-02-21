@@ -27,10 +27,10 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 
 public class App extends ListenerAdapter {
 
-    public static final String TOKEN = "MTA3NjI1NTA3NjE2OTA0MDAxMg.GJFqjw.Kwjxc7BjkqDkuTTroj0sI90xHeRCOKyCDajdE8";
+    public static final String TOKEN = "MTA3NjI1NTA3NjE2OTA0MDAxMg.GMQ3sR.Vdkdclm82XXXak2WzPHtBWlggdq5YYdhe7Dtvs";
     public static final String RSS = "https://www.tabnews.com.br/recentes/rss";
     public static final String ENDPOINT = "https://api.openai.com/v1/completions";
-    public static final String KEY = "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";
+    public static final String KEY = "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";
 
     public static void main(String[] args) {
         JDA client = JDABuilder.createLight(TOKEN, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
@@ -58,7 +58,7 @@ public class App extends ListenerAdapter {
         if (messageContent.startsWith("/pergunta")) {
             String question = messageContent.substring("/pergunta".length()).trim();
             if (!question.isEmpty()) {
-                String answer = getAnswer(question);
+                String answer = getAnswer("Essa é uma pergunta sobre tecnologia: " + question);
                 event.getChannel().sendMessage(event.getMember().getAsMention() + answer).queue();
             } else {
                 event.getChannel().sendMessage("Por favor, digite uma pergunta.").queue();
