@@ -27,10 +27,10 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 
 public class App extends ListenerAdapter {
 
-    public static final String TOKEN = "MTA3NjI1NTA3NjE2OTA0MDAxMg.GMQ3sR.Vdkdclm82XXXak2WzPHtBWlggdq5YYdhe7Dtvs";
+    public static final String TOKEN = "";
     public static final String RSS = "https://www.tabnews.com.br/recentes/rss";
     public static final String ENDPOINT = "https://api.openai.com/v1/completions";
-    public static final String KEY = "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";
+    public static final String KEY = "";
 
     public static void main(String[] args) {
         JDA client = JDABuilder.createLight(TOKEN, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
